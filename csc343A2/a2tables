@@ -1,0 +1,141 @@
+
+
+
+CREATE TABLE Query1 (
+    fname VARCHAR(20) NOT NULL,
+    lname VARCHAR(20) NOT NULL,
+    country VARCHAR(20) NOT NULL);
+
+
+CREATE VIEW ValueOverGoal AS
+    SELECT pid, value/goals AS ratio
+    FROM player;
+
+CREATE VIEW VtoG AS
+    SELECT min(ratio) AS MinRatio
+    FROM ValueOverGoal;
+
+
+
+CREATE TABLE Query2 (
+    name VARCHAR(20),
+    num INTEGER);
+
+CREATE VIEW PlayerNumInClub AS
+    SELECT p.fcid, count(p.pid) AS PlayerNum, c.name
+    FROM player p, club c
+    WHERE p.fcid = c.fcid 
+    GROUP BY p.fcid, c.name
+    ORDER BY count(p.pid) DESC,
+             c.name ASC
+             limit 3;
+
+
+CREATE TABLE Query3 (
+    isOpeningGame BOOLEAN);
+
+CREATE VIEW BrazilFirstDate AS
+    SELECT min(m.date) AS BraMinDate
+    FROM competes c, match m, country coun
+    WHERE ((c.country1 = coun.cid AND coun.name = 'Brazil') OR (c.country2 = coun.cid AND coun.name = 'Brazil')) AND (c.mid = m.mid);
+    
+
+CREATE VIEW BrazilFirstTime AS
+    SELECT min(m.time) AS BrazilMinTime
+    FROM BrazilFirstDate b, match m, competes c, country coun
+    WHERE m.date = b.BraMinDate AND ((c.country1 = coun.cid AND coun.name = 'Brazil') OR (c.country2 = coun.cid AND coun.name = 'Brazil')) AND (c.mid = m.mid);
+
+CREATE VIEW WorldFirstDate AS
+    SELECT min(m.date) AS WorldMinDate
+    FROM match m;
+
+CREATE VIEW WorldFirstTime AS
+    SELECT min(time) AS WorldMinTime
+    FROM WorldFirstDate w, match m
+    WHERE m.date = w.WorldMinDate;
+
+CREATE VIEW Result3 AS
+    SELECT bd.BraMinDate = wd.WorldMinDate AND bt.BrazilMinTime = wt.WorldMinTime AS isOpeningGame
+    FROM BrazilFirstDate bd, BrazilFirstTime bt, WorldFirstDate wd, WorldFirstTime wt;
+
+
+
+CREATE TABLE Query4 (
+    mid INTEGER REFERENCES match(mid) ON DELETE RESTRICT);
+
+CREATE VIEW MatchTickets AS
+    SELECT m.mid, count(t.tid) AS ticketsNum
+    FROM match m, ticket t
+    WHERE m.mid = t.mid AND m.date = t.dateIssued
+    GROUP BY m.mid;
+
+
+
+CREATE TABLE Query5 (
+    name VARCHAR(20));
+CREATE VIEW NumOfStad AS
+    SELECT count(sid) AS NumOfStad
+    FROM stadium s;
+CREATE VIEW NofStadofCountry AS
+    SELECT cou.cid, cou.name, count(DISTINCT s.sid)
+    FROM country cou, competes com, match m, stadium s
+    WHERE (cou.cid = com.country1 OR cou.cid = com.country2) AND com.mid = m.mid AND m.sid = s.sid
+    GROUP BY cou.cid;
+CREATE VIEW Result5 AS
+    SELECT nc.name
+    FROM NumOfStad ns, NofStadofCountry nc
+    WHERE nc.count = ns.NumOfStad;
+
+
+CREATE TABLE Query6 (
+    pid INTEGER REFERENCES player(pid) ON DELETE RESTRICT,
+    fname VARCHAR(20),
+    lname VARCHAR(20),
+    minutes NUMERIC);
+
+CREATE VIEW NumCompeteCountry AS
+    SELECT c.cid, count(com.mid) AS NumCompCountry
+    FROM country c, competes com
+    WHERE c.cid = com.country1 OR c.cid = com.country2
+    GROUP BY c.cid;
+CREATE VIEW NumCompetePlayer AS
+    SELECT pid, count(mid) AS NumCompPlayer, avg(minutes) AS AvgTime
+    FROM appearance a
+    WHERE minutes > 75
+    GROUP BY pid;
+CREATE VIEW Result6 AS
+    SELECT np.pid, p.fname, p.lname, np.AvgTime
+    FROM NumCompetePlayer np, NumCompeteCountry nc, player p
+    WHERE np.pid = p.pid AND p.cid = nc.cid AND np.NumCompPlayer = nc.NumCompCountry
+    ORDER BY np.AvgTime DESC;
+
+
+CREATE TABLE Query7 (
+    name VARCHAR(20),
+    coach VARCHAR(20),
+    budget INTEGER);
+CREATE VIEW CountrySumValue AS
+    SELECT c.cid, c.name, c.coach, sum(p.value) AS SumValue
+    FROM player p, country c
+    WHERE p.cid = c.cid 
+    GROUP BY c.cid;
+CREATE VIEW MinSumValue AS
+    SELECT min(SumValue) AS MinSumValue
+    FROM CountrySumValue;
+CREATE VIEW MinSumValueCountry AS
+    SELECT csv.cid, csv.name, csv.coach, csv.SumValue
+    FROM MinSumValue minsv, CountrySumValue csv
+    WHERE csv.SumValue = minsv.MinSumValue;
+CREATE VIEW MaxGoalsNum AS
+    SELECT max(goals) MaxGoalsNum
+    FROM player;
+CREATE VIEW MaxGoalsPlayer AS
+    SELECT p.pid, p.cid
+    FROM MaxGoalsNum mgn, player p
+    WHERE p.goals = mgn.MaxGoalsNum;
+CREATE VIEW Result7 AS
+    SELECT c.name, c.coach, minc.SumValue AS budget
+    FROM country c, MinSumValueCountry minc, MaxGoalsPlayer maxp
+    WHERE minc.cid = maxp.cid AND minc.cid = c.cid;
+ 
+

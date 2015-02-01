@@ -1,0 +1,93 @@
+\documentclass{article}
+
+
+\author{SHIHAO ZHAO  999599340  c3zhaosh\\ YINING LIN   999868558 g3inks\\}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Part1}
+\label{sec:examples}
+1.\\
+$\sigma_{country1 = country2} (Competes) = \emptyset$\\\\
+2.
+$\sigma_{(dateIssued < date) or ((dateIssued = date) and (timeIssued < time))} (Ticket \bowtie Match) = \emptyset$\\\\
+3.
+cannot be expressed\\\\
+4.
+$Team1 := \rho_{counrty, coach \rightarrow countryH, coachH} (Team)\\
+$$\sigma_{(country != countryH) and (coach = coachH)} (Team1 \times Team) = \emptyset$\\\\
+5.
+$Player[position] \subseteq \{G, D, M, S\} $\\
+
+
+\section{Part2}
+\label{sec:examples}
+
+1.\\
+$Match_Stadium_Competes := Match \bowtie Stadium \bowtie Competes$\\
+$Country1_stadium := \pi_{country1, SID} (Match_Stadium_Competes)$\\
+$Country2_stadium := \pi_{country2, SID} (Match_Stadium_Competes)$\\
+$All_happened_country_stadium := \\ \rho_{Country1 \rightarrow country} (Country1_stadium) \cup rho_{Country2 \rightarrow country} (Country2\_stadium)$\\
+$All_possible_country_stadium := \pi_{country, SID} (Team \times Stadium)$\\
+$All_not_happened_country_stadium := All_possible_country_stadium - All_happened_country_stadium$\\
+$Result := \pi_{country} (Team) - \pi_{country} (All_not_happened_country_stadium)$\\
+\\
+2.
+cannot be expressed\\\\
+3.\\
+$playedAsCountry1 := \pi_{country1} (Competes)$\\
+$playedAsCountry2 := \pi_{country2} (Competes)$\\
+$AllCountryPlayed := \rho_{country1 \rightarrow country} (playedAsCountry1) \cup \rho_{country2 \rightarrow country} (playedAsCountry2)$\\
+$AllNotPlayedCountry := \pi_{country} (Team) - AllCountryPlayed$\\
+$Result := \pi_{PID} (Player \bowtie AllNotPlayedCountry)$\\\\
+4.\\
+$MoreThan2Staium := \pi_{SID} (\rho_{MID, SID \rightarrow MIDH, SIDH} (Match) \bowtie_{(MIDH \neq MID) and (SIDH = SID)}Match$\\
+$Result := \pi_{SID} (Match) - MoreThan2Stadium$\\\\
+
+5.\\
+$Competes1 := \rho_{MID, country1, country2, goals1, goals2 \rightarrow MIDH, country1H, country2H, goalsH, goals2H}(Competes)$\\
+$A := (Competes1.goals1H-Competes1.goals2H > Competes.goals1-Competes.goals2 >= 0)$\\
+$B := (Competes1.goals2H-Competes1.goals1H > Competes.goals2-Competes.goals1 >= 0)$\\
+$AllNotHighestCompetes := Competes1 \bowtie_{A or B}Competes2$\\
+$AllHighestCompetes := Competes - \pi_{MID, country1, coutry2, goals1, goals2} (AllNotHighestCompetes)$\\
+$AllHighestCompetesCountries = \pi_{country} (\rho_{country1 \rightarrow country} (AllHighestCompetes)) \cup \pi_{country} (\rho_{country1 \rightarrow country} (AllHighestCompetes))$\\
+$Result := \pi_{coach} (AllHighestCompetesCountries \bowtie Team)$\\\\
+
+6.\\
+$AllDplayer := \sigma_{position = 'D'} (Player)$\\
+$AllDcomb := \rho_{PID, goals \rightarrow PIDH, goalsH} (AllDplayer \times AllDplayer)$\\
+$NotHighestPlayer := \pi_{PID, fname, lname, position, goals, country} (\sigma_{goals < goalsH} (AllDcomb)$\\
+$Result := \pi_{fname, lname} (AllDplayer - NotHighestPlayer)$\\\\
+7.\\
+$Ticket_comb := \rho_{TID, dateIssued, timeIssued, MID \rightarrow TID1, dateIss1, timeIss1, MID1} (Ticket) \times Ticket$\\
+$A := ((dateIssued = dateIss1) and (timeIssued > timeIss1))$\\
+$Not1stTickets := \pi_{TID, dateIssued, timeIssued, MID} (\sigma_{(dateIssued > dateIss1) or A} (Ticket_comb)$\\
+$The1stTicket := Ticket - Not1stTickets$\\
+$CountriesOf1stTicket := The1stTicket \bowtie Competes$\\
+$TheWinnerOf1stTicket := \pi_{country} (\rho_{country1 \rightarrow country} (\sigma_{goals1 > goals2} (CountriesOf1stTicket))) \cup \pi_{country} (\rho_{country2 \rightarrow country} (\sigma_{goals2 > goals1} (CountriesOf1stTicket)))$\\\\
+8.\\
+$Spain_players := \sigma_{country = 'Spain'} (Player)$\\
+$transfer := \sigma_{goals < goalsH} (\rho_{PID, goals \rightarrow PIDH, goalsH} (Spain_players) \times Spain_players)$\\
+$SpainNot1stGoalsPlayers := \pi_{PID, fname, lname, goals} (transfer)$\\
+$transfer2 := \rho_{PID, goals \rightarrow PIDH, goalsH} (SpainNot1stGoalsPlayers) \times SpainNot1stGoalsPlayers$\\
+$transfer3 := \pi_{PID, fname, lname, goals} (\sigma_{goals < goalsH} (transfer2))$\\
+$The2ndSpainPlayer := \pi_{fname, lname} (SpainNot1stGoalsPlayers - transfer3)$\\\\
+9.\\
+$Tickets_on_Match_day := Ticket \bowtie_{dateIssued = date}Match$\\
+$Tickets_on_Match_day_H := \rho_{TID, MID \rightarrow TIDH, MIDH} (Tickets_on_Match_day)$\\
+$More_than_two_tickets_match := \pi_{MID} (\sigma_{(TID \neq TIDH) and (MID = MIDH)} (Tickets_on_Match_day_H \times Tickets_on_Match_day))$\\\\
+10.\\
+$AllCountriesHaveWon := \pi_{country} (\rho_{country1 \rightarrow country} (\sigma_{goals1 > goals2} (Competes))) \cup \pi_{country} (\rho_{country2 \rightarrow country} (\sigma_{goals2 > goals1} (Competes)))$\\
+$PlayersOfCountriesWon := Player \bowtie AllCountriesHaveWon$\\
+$tranfer1 := \rho_{PID, goals, country \rightarrow PIDH, goalsH, countryH} (PlayersOfCountriesWon)$\\
+$The1stGoalPlayers := \pi_{position, goals, country} (\sigma_{goals < goalsH} (transfer1 \bowtie_{countryH = country}PlayersOfCountriesWon))$\\
+
+\end{document}
+
+
+
+
+

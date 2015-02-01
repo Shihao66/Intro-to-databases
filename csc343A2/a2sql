@@ -1,0 +1,33 @@
+
+
+
+INSERT INTO Query1
+    (SELECT fname, lname, c.name AS country
+     FROM player p, country c, VtoG v, valueovergoal vog
+     WHERE p.cid = c.cid AND p.pid = vog.pid AND vog.ratio = v.Minratio);
+
+INSERT INTO Query2
+    (SELECT name, PlayerNum AS num
+     FROM PlayerNumInClub);
+
+INSERT INTO Query3
+    (SELECT *
+     FROM result3);
+
+INSERT INTO Query4
+    (SELECT mid
+     FROM MatchTickets m
+     WHERE ticketsNum >= 2
+     ORDER BY mid DESC);
+
+INSERT INTO Query5
+    (SELECT name
+     FROM Result5 r);
+
+INSERT INTO Query6
+    (SELECT *
+     FROM Result6);
+
+INSERT INTO Query7
+    (SELECT * 
+     FROM Result7);
